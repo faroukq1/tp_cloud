@@ -1,148 +1,170 @@
-![Alt text](../cloud/cloud.png)
 
-<table style="width:100%">
-  <thead>
-    <tr>
-      <th>Method</th>
-      <th>Endpoint</th>
-      <th>Description</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr><td>POST</td><td>/api/register</td><td>Register a new user</td></tr>
-    <tr><td>POST</td><td>/api/login</td><td>Authenticate user and return a token/session</td></tr>
-    <tr><td>POST</td><td>/api/upload</td><td>Upload a file to the user's cloud directory</td></tr>
-    <tr><td>GET</td><td>/api/files</td><td>List all files in the user's cloud directory</td></tr>
-    <tr><td>GET</td><td>/api/files/{filename}</td><td>Download a specific file from the cloud</td></tr>
-    <tr><td>DELETE</td><td>/api/files/{filename}</td><td>Delete a specific file from the cloud (optional)</td></tr>
-    <tr><td>GET</td><td>/api/files/checksum</td><td>Return filenames with their checksums for sync</td></tr>
-  </tbody>
-</table>
+## 📡 **TCP Cloud Sync Protocol**
+
+Each client connects via TCP and sends **commands as text or serialized packets**. All communications are done over a single persistent socket.
 
 ---
 
-### 🔐 **1. `POST /api/register` — Register a New User**
+### 🧾 **Command Overview**
 
-#### **Description:**
+| Command    | Arguments                             | Description                     |
+| ---------- | ------------------------------------- | ------------------------------- |
+| `REGISTER` | `<username> <password>`               | Register a new user             |
+| `LOGIN`    | `<username> <password>`               | Log in and start session        |
+| `UPLOAD`   | `<filename> <filesize>\n<file-bytes>` | Upload file to server           |
+| `LIST`     | *(none)*                              | List all files for user         |
+| `DOWNLOAD` | `<filename>`                          | Download a file                 |
+| `DELETE`   | `<filename>`                          | Delete a file (optional)        |
+| `CHECKSUM` | *(none)*                              | Return list of file checksums   |
+| `QUIT`     | *(none)*                              | Gracefully close the connection |
 
-Create a new user account and a dedicated cloud directory.
-
-#### **Algorithm:**
-
-1. Receive JSON: `{ "username": "user", "password": "pass" }`.
-2. Validate input (non-empty, unique username).
-3. Hash the password using `BCrypt`.
-4. Save user to database.
-5. Create a directory: `/cloud_storage/{username}`.
-6. Return success response: `201 Created`.
-
----
-
-### 🔑 **2. `POST /api/login` — Authenticate User**
-
-#### **Description:**
-
-Verify user credentials and return a token/session.
-
-#### **Algorithm:**
-
-1. Receive JSON: `{ "username": "user", "password": "pass" }`.
-2. Look up user in database.
----
-
-### 📤 **3. `POST /api/upload` — Upload a File**
-
-#### **Description:**
-
-Store a user file in their cloud directory.
-
-#### **Algorithm:**
-
-1. Accept `multipart/form-data` with file and JWT in headers.
-2. Authenticate token → get username.
-3. Get file input stream from the request.
-4. Save file to: `/cloud_storage/{username}/{filename}`.
-5. (Optional) Store metadata in DB: filename, size, hash, timestamp.
-6. Return: `200 OK` with success message.
+> Authentication must be completed first (via REGISTER or LOGIN).
 
 ---
 
-### 📂 **4. `GET /api/files` — List User Files**
+## 🧪 **Sample Message Flow**
 
-#### **Description:**
+### 1. **REGISTER**
 
-Return the list of all files for the user.
+Client →
 
-#### **Algorithm:**
+```
+REGISTER alice secret123
+```
 
-1. Authenticate JWT → get username.
-2. Read file names from `/cloud_storage/{username}/`.
-3. Optionally include size, lastModified time.
-4. Return JSON list:
+Server →
 
-   ```json
-   [
-     { "filename": "a.txt", "size": 1024 },
-     { "filename": "b.jpg", "size": 2048 }
-   ]
-   ```
+```
+OK User created
+```
 
 ---
 
-### 📥 **5. `GET /api/files/{filename}` — Download File**
+### 2. **LOGIN**
 
-#### **Description:**
+Client →
 
-Allow client to download a specific file.
+```
+LOGIN alice secret123
+```
 
-#### **Algorithm:**
+Server →
 
-1. Authenticate JWT → get username.
-2. Locate file: `/cloud_storage/{username}/{filename}`.
-3. If file exists, return it as a `ResponseEntity<Resource>` with headers:
-
-   * `Content-Disposition: attachment`.
-   * Content-Type.
-4. If file missing → return `404 Not Found`.
+```
+OK Login successful
+```
 
 ---
 
-### 🗑️ **6. `DELETE /api/files/{filename}` — Delete File (Optional)**
+### 3. **UPLOAD**
 
-#### **Description:**
+Client →
 
-Delete a file from the user’s cloud directory.
+```
+UPLOAD a.txt 14
+Hello, world!\n
+```
 
-#### **Algorithm:**
+Server →
 
-1. Authenticate JWT → get username.
-2. Locate and delete: `/cloud_storage/{username}/{filename}`.
-3. Return:
-
-   * `200 OK` if success.
-   * `404 Not Found` if file missing.
+```
+OK Upload successful
+```
 
 ---
 
-### 🔁 **7. `GET /api/files/checksum` — File Checksum List**
+### 4. **LIST**
 
-#### **Description:**
+Client →
 
-Return hashes of user files for sync verification.
+```
+LIST
+```
 
-#### **Algorithm:**
+Server →
 
-1. Authenticate JWT → get username.
-2. For each file in `/cloud_storage/{username}/`:
+```
+a.txt 1024\n
+b.jpg 2048\n
+.\n
+```
 
-   * Calculate SHA-256 hash or MD5.
-3. Return list:
+---
 
-   ```json
-   [
-     { "filename": "a.txt", "checksum": "e3b0c..." },
-     { "filename": "b.jpg", "checksum": "fa1d3..." }
-   ]
-   ```
+### 5. **DOWNLOAD**
+
+Client →
+
+```
+DOWNLOAD a.txt
+```
+
+Server →
+
+```
+OK 14
+Hello, world!\n
+```
+
+---
+
+### 6. **DELETE**
+
+Client →
+
+```
+DELETE a.txt
+```
+
+Server →
+
+```
+OK File deleted
+```
+
+---
+
+### 7. **CHECKSUM**
+
+Client →
+
+```
+CHECKSUM
+```
+
+Server →
+
+```
+a.txt e3b0c44298...\n
+b.jpg fa1d3b8c2a...\n
+.\n
+```
+
+---
+
+## 🛠️ **File Storage Layout**
+
+```
+/tcp_cloud_storage/
+  └── alice/
+        ├── a.txt
+        └── b.jpg
+```
+
+---
+
+## 🧱 **Implementation Notes**
+
+### Server Side
+
+* Use `java.net.ServerSocket` (Java) or `socket.socket()` (Python/C++) to handle incoming connections.
+* Each connection should be handled by a separate thread (or async).
+* Maintain a simple `users.db` (can be SQLite, JSON, or flat file).
+* Use SHA-256 or MD5 to calculate checksums.
+
+### Client Side
+
+* Build a simple CLI or GUI that can send commands and read responses.
+* Serialize file uploads/downloads with header info (filename, size) followed by raw bytes.
 
 ---
