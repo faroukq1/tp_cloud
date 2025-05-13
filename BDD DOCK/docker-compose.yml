@@ -1,0 +1,27 @@
+
+
+services:
+  db:
+    image: mysql:8.3
+    container_name: cloud_drive_db
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: cloud_drive
+      MYSQL_USER: user
+      MYSQL_PASSWORD: pass
+    ports:
+      - "3307:3306"
+    volumes:
+      - db_data:/var/lib/mysql
+      - ./sql:/docker-entrypoint-initdb.d
+
+  storage:
+    image: alpine
+    container_name: cloud_drive_storage
+    volumes:
+      - ./data:/data
+    command: ["tail", "-f", "/dev/null"]
+
+volumes:
+  db_data:
