@@ -30,8 +30,10 @@ public class BDDManager {
             PreparedStatement stmt = conn.prepareStatement(sql);
             stmt.setString(1, username);
             stmt.setString(2, password);
-            stmt.executeUpdate();
-            return true;
+           int t = stmt.executeUpdate();
+            if(t==0)
+                return false ; 
+            return FileManager.createUserDocier(username); // creation de docier coté cloud 
         } catch (SQLException e) {
             System.err.println("Erreur inscription : " + e.getMessage());
             return false;
@@ -39,7 +41,25 @@ public class BDDManager {
     }
 
 
+    public static boolean login (String username, String mdp) {
+        
+        
+            try(Connection conn = connect()){
+            String sql = "SELECT * FROM users WHERE username = ? AND mdp = ?";
+            PreparedStatement stmt = conn.prepareStatement(sql);
+            stmt.setString(1, username);
+            stmt.setString(2, mdp);
+            ResultSet rs = stmt.executeQuery();
+            return rs.next(); 
+    }catch (SQLException e) {
+            System.err.println(" Erreur login : " + e.getMessage());
+            return false;
+        }
 
 
+}
+
+    
+    
 
 }

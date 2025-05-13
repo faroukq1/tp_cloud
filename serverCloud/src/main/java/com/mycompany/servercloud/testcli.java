@@ -16,20 +16,17 @@ import java.net.Socket;
  */
 public class testcli {
     
-    
-    
-    
-    public static void main(String[] args) throws IOException {
-    Socket socket = new Socket("localhost", 3020);
-PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
-BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+public static void main(String[] args) throws IOException {
+        Socket socket = new Socket("localhost", 3020);
+        PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
+        BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 
-out.println("insc,nour,1234");
-String response = in.readLine();
-System.out.println("🟢 Réponse serveur : " + response);
+        out.println("insc,farouk,1234");
+        String response = in.readLine();
+        System.out.println(" Réponse serveur : " + response);
 
-socket.close();
-    }
+        socket.close();
+}
 
     
 }

@@ -49,19 +49,52 @@ public class ServerCloud {
         ) {
             String request = in.readLine();
             System.out.println("Requête reçue : " + request);
-
+            
+            
             String[] parts = request.split(",");
-            if (parts.length == 3 && parts[0].equals("insc")) {
-                String username = parts[1];
-                String password = parts[2];
+            String command = parts[0];
 
-                if (BDDManager.inscription(username, password)) {
-                    out.println("OK");
-                } else {
-                    out.println("ERR");
-                }
-            } else {
-                out.println("BAD_FORMAT");
+            switch (command) {
+                case "insc":
+                    if (parts.length == 3) {
+                        String username = parts[1];
+                        String password = parts[2];
+                        if (BDDManager.inscription(username, password)) {
+                            out.println("OK");
+                        } else {
+                            out.println("ERR");
+                        }
+                    } else {
+                        out.println("BAD_FORMAT");
+                    }
+                    break;
+
+                case "log":
+                    if (parts.length == 3) {
+                        String username = parts[1];
+                        String password = parts[2];
+                        if (BDDManager.login(username, password)) {
+                            out.println("OK");
+                        } else {
+                            out.println("ERR");
+                        }
+                    } else {
+                        out.println("BAD_FORMAT");
+                    }
+                    break;
+
+                case "upload":
+                    
+                    out.println("NOT_IMPLEMENTED");
+                    break;
+
+                case "del":
+                    
+                    out.println("NOT_IMPLEMENTED");
+                    break;
+
+                default:
+                    out.println("UNKNOWN_COMMAND");
             }
 
         } catch (Exception e) {
