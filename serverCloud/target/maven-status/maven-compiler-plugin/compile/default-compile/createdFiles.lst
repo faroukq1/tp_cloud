@@ -1,6 +1,6 @@
 BDD\BDDManager.class
-com\mycompany\servercloud\testcli.class
 com\mycompany\servercloud\Client.class
+com\mycompany\servercloud\testcli.class
 com\mycompany\servercloud\Traitement_client.class
 BDD\FileManager.class
 com\mycompany\servercloud\ServerCloud.class

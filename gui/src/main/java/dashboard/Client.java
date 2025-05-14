@@ -90,6 +90,27 @@ public class Client {
             Logger.getLogger(Client.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
+    
+    public boolean supprimerFichier(String username, String filePath) {
+File originalFile = new File(filePath);
+String fileName = originalFile.getName();
+
+try (
+    PrintWriter out = new PrintWriter(client.getOutputStream(), true);
+    BufferedReader in = new BufferedReader(new InputStreamReader(client.getInputStream()))
+) {
+    // On envoie juste le nom de fichier, pas son contenu
+    out.println("delete," + username + "," + fileName);
+    String response = in.readLine();
+    return "OK".equalsIgnoreCase(response);
+} catch (IOException ex) {
+    Logger.getLogger(Client.class.getName()).log(Level.SEVERE, null, ex);
+    return false;
+}
+}
+
+    
+    
 
     public static void main(String[] args) {
         Client client = new Client("farouk");

@@ -61,6 +61,12 @@ public class FileTableModel extends AbstractTableModel {
     public int getRowCount() {
         return fileList.size();
     }
+    
+    // in FileTableModel
+public FileRecord getFileRecord(int rowIndex) {
+    return fileList.get(rowIndex);
+}
+
 
     // Returns the number of columns in the table (3 columns)
     @Override
@@ -95,4 +101,12 @@ public class FileTableModel extends AbstractTableModel {
         this.fileList = newFileList;
         fireTableDataChanged();  // Notify the table to refresh
     }
+    
+    
+    public void refresh(String username) {
+    fileList.clear();                   // Clear the current list
+    fetchFilesFromServer(username);     // Fetch the updated list from the server
+    fireTableDataChanged();             // Notify the table to refresh
+}
+
 }

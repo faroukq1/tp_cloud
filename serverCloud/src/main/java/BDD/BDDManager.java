@@ -203,6 +203,49 @@ public class BDDManager {
         }
     }
     
+    public static boolean deleteFile(String username, String filename) {
+    try (Connection conn = connect()) {
+        // 1) Récupérer l'ID utilisateur
+        String sqlUser = "SELECT id FROM users WHERE username = ?";
+        int userId;
+        try (PreparedStatement ps = conn.prepareStatement(sqlUser)) {
+            ps.setString(1, username);
+            ResultSet rs = ps.executeQuery();
+            if (!rs.next()) {
+                System.out.println("Utilisateur non trouvé : " + username);
+                return false;
+            }
+            userId = rs.getInt("id");
+        }
+
+        // 2) Supprimer la ligne dans files
+        String sqlDel = "DELETE FROM files WHERE user_id = ? AND nom_fichier = ?";
+        try (PreparedStatement ps = conn.prepareStatement(sqlDel)) {
+            ps.setInt(1, userId);
+            ps.setString(2, filename);
+            int affected = ps.executeUpdate();
+            if (affected == 0) {
+                System.out.println("Aucun tuple supprimé pour " + filename);
+                return false;
+            }
+        }
+
+        // 3) Supprimer le fichier du disque (desktop data)
+        Path userDir = Paths.get(System.getProperty("user.home"), "Desktop", "data", username);
+        Path filePath = userDir.resolve(filename);
+        boolean deleted = Files.deleteIfExists(filePath);
+        System.out.println(deleted 
+            ? "Fichier supprimé du disque : " + filePath 
+            : "Fichier introuvable sur le disque : " + filePath);
+
+        return true;
+    } catch (SQLException | IOException e) {
+        e.printStackTrace();
+        return false;
+    }
+}
+
+    
     public static void main (String [] args) {
             testConnection();
     }

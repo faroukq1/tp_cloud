@@ -124,7 +124,25 @@ class Traitement_client implements Runnable {
                             out.println("NO_FILES_FOUND");
                         }
                     }
+                        
+                        
                     break;
+                    
+                      case "delete":
+            // format attendu: delete,username,filename
+            if (parts.length == 3) {
+               String username = parts[1];
+               String filename = parts[2];
+                if (BDDManager.deleteFile(username, filename)) {
+                    out.println("OK");
+                    } else {
+                    out.println("FAILED");
+                    }
+                } else {
+                out.println("BAD_FORMAT");
+                }
+                break;
+
                 
                 default:
                     out.println("UNKNOWN_COMMAND");
