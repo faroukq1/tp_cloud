@@ -5,14 +5,11 @@
 package com.mycompany.servercloud;
 import BDD.BDDManager;
 import java.io.BufferedReader;
-import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 
 public class ServerCloud {
@@ -35,7 +32,7 @@ public class ServerCloud {
 
 
 
- class Traitement_client implements Runnable{
+ class Traitement_client implements Runnable {
     Socket client;
     public Traitement_client(Socket client){
         this.client=client;
@@ -60,9 +57,11 @@ public class ServerCloud {
                         String username = parts[1];
                         String password = parts[2];
                         if (BDDManager.inscription(username, password)) {
-                            out.println("OK");
+                            out.println("incription done");
                         } else {
-                            out.println("ERR");
+                            System.out.println(parts[0]);
+                            System.out.println(parts[1]);
+                            out.println("incription failed");
                         }
                     } else {
                         out.println("BAD_FORMAT");
@@ -74,7 +73,7 @@ public class ServerCloud {
                         String username = parts[1];
                         String password = parts[2];
                         if (BDDManager.login(username, password)) {
-                            out.println("OK");
+                            out.println("welcome : " + username);
                         } else {
                             out.println("ERR");
                         }
@@ -84,14 +83,19 @@ public class ServerCloud {
                     break;
 
                 case "upload":
-                    
+                    // to do
                     out.println("NOT_IMPLEMENTED");
                     break;
 
                 case "del":
-                    
-                    out.println("NOT_IMPLEMENTED");
+                    if (parts.length == 2) {
+                        String username = parts[1];
+                        if (BDDManager.deleteUser(username))
+                            out.println("user " + username + " has been deleted"); 
+                        else 
+                            out.println("invalid username");
                     break;
+                }
 
                 default:
                     out.println("UNKNOWN_COMMAND");
@@ -101,6 +105,6 @@ public class ServerCloud {
             e.printStackTrace();
         }
     }
-    
+
     
 }

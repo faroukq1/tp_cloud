@@ -1,13 +1,6 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package BDD;
 import java.sql.*;
-/**
- *
- * @author Latitude7480
- */
+
 public class BDDManager {
     private static final String URL = "jdbc:mysql://localhost:3307/cloud_drive";
     private static final String USER = "user";
@@ -31,10 +24,12 @@ public class BDDManager {
             stmt.setString(1, username);
             stmt.setString(2, password);
            int t = stmt.executeUpdate();
-            if(t==0)
-                return false ; 
-            return FileManager.createUserDocier(username); // creation de docier coté cloud 
+            if(t == 0)
+                return false;
+             
+            return FileManager.createUserDocier(username);
         } catch (SQLException e) {
+            e.printStackTrace();
             System.err.println("Erreur inscription : " + e.getMessage());
             return false;
         }
@@ -42,8 +37,7 @@ public class BDDManager {
 
 
     public static boolean login (String username, String mdp) {
-        
-        
+
             try(Connection conn = connect()){
             String sql = "SELECT * FROM users WHERE username = ? AND mdp = ?";
             PreparedStatement stmt = conn.prepareStatement(sql);
@@ -57,9 +51,25 @@ public class BDDManager {
         }
 
 
-}
-
+    }
+    public static boolean deleteUser (String username) {
+        try (Connection conn = connect()) {
+            String sql = "DELETE FROM users WHERE username = ?";
+            PreparedStatement stmt = conn.prepareStatement(sql);
+            stmt.setString(1, username);
+            int affectedRows = stmt.executeUpdate();
+            return affectedRows > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
     
-    
+    public static boolean handleUpload () {
+        return true;
+    }
+    public static void main (String [] args) {
+            testConnection();
+    }
 
 }
