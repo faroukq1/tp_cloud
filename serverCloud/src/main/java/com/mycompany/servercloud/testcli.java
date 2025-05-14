@@ -15,7 +15,7 @@ public static void main(String[] args) throws IOException {
         PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
         BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 
-        // out.println("insc,farouk,1234");
+        out.println("insc,oussama,1234");
         // out.println("del,farouk");
         // out.println("log,farouk,1234");
 
@@ -23,12 +23,12 @@ public static void main(String[] args) throws IOException {
         
         // start file uploading test
 
-        String username = "farouk";
-        String filename = "dummy.txt";
-        // write your own path        
-        byte [] fileData = Files.readAllBytes(Paths.get("C:\\Users\\NBX\\Desktop\\dummy.txt"));
-        String fileDataString = new String(fileData);
-        out.println("upload,"+username+","+filename+","+fileDataString);
+        // String username = "farouk";
+        // String filename = "dummy.txt";
+        // // write your own path        
+        // byte [] fileData = Files.readAllBytes(Paths.get("C:\\Users\\NBX\\Desktop\\dummy.txt"));
+        // String fileDataString = new String(fileData);
+        // out.println("upload,"+username+","+filename+","+fileDataString);
         
         // end file uploading test
         String response = in.readLine();

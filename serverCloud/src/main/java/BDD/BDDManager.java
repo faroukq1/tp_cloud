@@ -2,6 +2,7 @@ package BDD;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.sql.*;
@@ -87,7 +88,7 @@ public class BDDManager {
             fileOut.write(fileData);
             fileOut.flush();
     
-            boolean isSaved = saveFileToDatabase(username, filename, fileData.length);
+            boolean isSaved = saveFileToDatabase(username, filename, fileData);
             System.out.println(isSaved ? "File uploaded successfully!" : "Failed uploading file");    
             return isSaved;
         } catch (IOException e) {
@@ -98,15 +99,48 @@ public class BDDManager {
     
     
 
-    public static boolean saveFileToDatabase (String username, String filename, long fileData) {
+    public static boolean saveFileToDatabase(String username, String filename, byte[] fileData) {
         try (Connection conn = connect()) {
+            int userId = -1;
+    
+            String sql = "SELECT id FROM users WHERE username = ?";
+            try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+                stmt.setString(1, username);
+                ResultSet rs = stmt.executeQuery();
+                if (rs.next()) {
+                    userId = rs.getInt("id");
+                } else {
+                    System.out.println("User not found: " + username);
+                    return false;
+                }
+            }
+    
+            // 2. Create project directory for storing the file
+            Path projectUserDir = Paths.get("database", "data", username);
+            System.out.println("Creating folder at: " + projectUserDir.toAbsolutePath());
+            Files.createDirectories(projectUserDir);
             
-        } catch (SQLException e) {
+            // 3. Save the file to the project directory
+            Path projectFilePath = projectUserDir.resolve(filename);
+            try (FileOutputStream out = new FileOutputStream(projectFilePath.toFile(), false)) {
+                out.write(fileData);
+            }
+    
+            String insertSql = "INSERT INTO files (user_id, nom_fichier) VALUES (?, ?)";
+            try (PreparedStatement stmt = conn.prepareStatement(insertSql)) {
+                stmt.setInt(1, userId);
+                stmt.setString(2, filename);
+                int affectedRows = stmt.executeUpdate();
+                return affectedRows > 0;
+            }
+    
+        } catch (SQLException | IOException e) {
             e.printStackTrace();
-            System.out.println("Something went wrong..." + e.getMessage());
+            System.out.println("Something went wrong: " + e.getMessage());
+            return false;
         }
-        return true;
     }
+    
     public static void main (String [] args) {
             testConnection();
     }
