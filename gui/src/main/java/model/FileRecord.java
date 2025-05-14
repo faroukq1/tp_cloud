@@ -25,4 +25,13 @@ public class FileRecord implements Serializable {
     public String getUploadDate() {
         return uploadDate;
     }
+
+    @Override
+    public String toString() {
+        return "FileRecord{" +
+               "fileID=" + fileID +
+            ", fileName='" + fileName + '\'' +
+            ", uploadDate='" + uploadDate + '\'' +
+            '}';
+    }
 }

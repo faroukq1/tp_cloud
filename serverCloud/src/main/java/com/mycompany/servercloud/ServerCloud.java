@@ -124,24 +124,37 @@ class Traitement_client implements Runnable {
                             out.println("NO_FILES_FOUND");
                         }
                     }
-                        
-                        
                     break;
-                    
+                    case "detect":
+                        if (parts.length == 3) {
+                            String fileId = parts[1];
+                            String fileDate = parts[2];
+
+                            if (BDDManager.isDatabaseFileOlder(Integer.parseInt(fileId), fileDate)) {
+                                System.out.println("file needs update");
+                                out.println("OLD " + fileId);
+                            } else {
+                                System.out.println("no need to change");
+                                out.println("NEW");
+                            }
+                        } else {
+                            out.println("INVALID_TOKEN");
+                        }
+                        break;
                       case "delete":
-            // format attendu: delete,username,filename
-            if (parts.length == 3) {
-               String username = parts[1];
-               String filename = parts[2];
-                if (BDDManager.deleteFile(username, filename)) {
-                    out.println("OK");
-                    } else {
-                    out.println("FAILED");
-                    }
-                } else {
-                out.println("BAD_FORMAT");
-                }
-                break;
+                            // format attendu: delete,username,filename
+                            if (parts.length == 3) {
+                            String username = parts[1];
+                            String filename = parts[2];
+                                if (BDDManager.deleteFile(username, filename)) {
+                                    out.println("OK");
+                                    } else {
+                                    out.println("FAILED");
+                                    }
+                                } else {
+                                out.println("BAD_FORMAT");
+                                }
+                                break;
 
                 
                 default:

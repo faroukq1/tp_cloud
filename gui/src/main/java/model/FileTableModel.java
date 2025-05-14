@@ -8,11 +8,11 @@ import java.net.Socket;
 public class FileTableModel extends AbstractTableModel {
 
     private String[] columnNames = {"File ID", "File Name", "Upload Date"};
-    private ArrayList<FileRecord> fileList;
+    public static ArrayList<FileRecord> fileList;
 
     // Constructor to initialize the model and fetch files from the server
     public FileTableModel(String username) {
-        this.fileList = new ArrayList<>();
+        fileList = new ArrayList<>();
         fetchFilesFromServer(username);  // Fetch files for the specified user
     }
 
@@ -98,7 +98,7 @@ public FileRecord getFileRecord(int rowIndex) {
 
     // Set a new list of file records and notify the table that data has changed
     public void setFileList(ArrayList<FileRecord> newFileList) {
-        this.fileList = newFileList;
+        fileList = newFileList;
         fireTableDataChanged();  // Notify the table to refresh
     }
     

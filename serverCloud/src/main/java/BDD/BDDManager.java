@@ -6,6 +6,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.sql.*;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 
 public class BDDManager {
@@ -245,7 +247,41 @@ public class BDDManager {
     }
 }
 
-    
+public static boolean isDatabaseFileOlder(int fileId, String localDateStr) {
+    // Pattern matches '2025-05-14 14:59:49.0'
+    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.S");
+
+    try {
+        // Convert string to LocalDateTime
+        LocalDateTime localDateTime = LocalDateTime.parse(localDateStr, formatter);
+
+        String query = "SELECT date_upload FROM files WHERE id = ?";
+        try (Connection conn = connect();
+             PreparedStatement stmt = conn.prepareStatement(query)) {
+
+            stmt.setInt(1, fileId);
+            ResultSet rs = stmt.executeQuery();
+
+            if (rs.next()) {
+                Timestamp dbTimestamp = rs.getTimestamp("date_upload");
+
+                if (dbTimestamp != null) {
+                    LocalDateTime dbDateTime = dbTimestamp.toLocalDateTime();
+                    return dbDateTime.isBefore(localDateTime);
+                }
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+    } catch (Exception e) {
+        System.out.println("Error parsing date string: " + e.getMessage());
+    }
+
+    return false;
+}
+
     public static void main (String [] args) {
             testConnection();
     }
