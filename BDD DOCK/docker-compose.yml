@@ -20,7 +20,7 @@ services:
     image: alpine
     container_name: cloud_drive_storage
     volumes:
-      - "C:/Users/Latitude7480/Desktop/data:/data"
+      - "C:/Users/NBX/Desktop/data:/data"
     command: ["tail", "-f", "/dev/null"]
 
 volumes:
