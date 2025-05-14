@@ -99,6 +99,12 @@ public class BDDManager {
     
 
     public static boolean saveFileToDatabase (String username, String filename, long fileData) {
+        try (Connection conn = connect()) {
+            
+        } catch (SQLException e) {
+            e.printStackTrace();
+            System.out.println("Something went wrong..." + e.getMessage());
+        }
         return true;
     }
     public static void main (String [] args) {
