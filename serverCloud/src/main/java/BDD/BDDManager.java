@@ -116,7 +116,7 @@ public class BDDManager {
             }
     
             // 2. Create project directory for storing the file
-            Path projectUserDir = Paths.get("database", "data", username);
+            Path projectUserDir = Paths.get("BDD DOCK", "data", username);
             System.out.println("Creating folder at: " + projectUserDir.toAbsolutePath());
             Files.createDirectories(projectUserDir);
             
