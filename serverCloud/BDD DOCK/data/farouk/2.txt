@@ -1,0 +1,20 @@
+
+
+Trouver tous les patients nés après 1990.
+{
+  "date_naissance": { "$gt": "1990-01-01" }
+}
+Trouver les consultations du Dr. Khelifi.
+{
+  "medecin": "Dr. Khelifi"
+}
+
+Lister tous les patients souffrant de "myopie".
+{
+  "antecedents": "myopie"
+}
+
+
+
+
+
