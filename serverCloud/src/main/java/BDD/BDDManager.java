@@ -72,8 +72,8 @@ public class BDDManager {
     }
 
     
-    public static boolean handleUpload(String username, String filename, byte[] fileData) {
-        // Define user directory
+   public static boolean handleUpload(String username, String filename, byte[] fileData) {
+      // Define user directory
         Path userDir = Paths.get(System.getProperty("user.home"), "Desktop", "data", username);
         File userFolder = userDir.toFile();
     
@@ -97,9 +97,39 @@ public class BDDManager {
         }
     }
     
-    
 
-    public static boolean saveFileToDatabase(String username, String filename, byte[] fileData) {
+    /*public static boolean handleUpload(String username, String filename, byte[] fileData) {
+    // Define user directory (change this as needed)
+    Path userDir = Paths.get(System.getProperty("user.home"), "Desktop", "data", username);
+    File userFolder = userDir.toFile();
+
+    // Create folder if it doesn't exist
+    if (!userFolder.exists()) {
+        boolean canCreate = userFolder.mkdirs();
+        System.out.println(canCreate ? "Folder created successfully." : "Failed to create folder.");
+    }
+
+    // Define the full file path
+    Path filePath = userDir.resolve(filename);
+
+    try (FileOutputStream fileOut = new FileOutputStream(filePath.toFile(), false)) {
+        // Write the file data
+        fileOut.write(fileData);
+        fileOut.flush();
+
+        // Optionally save file data to the database
+        boolean isSaved = saveFileToDatabase(username, filename, fileData);
+        System.out.println(isSaved ? "File uploaded successfully!" : "Failed uploading file");
+
+        return isSaved;
+    } catch (IOException e) {
+        e.printStackTrace();
+        return false;
+    }
+}
+    */
+    
+    public static boolean saveFileToDatabase(String username, String filename, byte[] fileData) throws IOException {
         try (Connection conn = connect()) {
             int userId = -1;
     
@@ -134,7 +164,7 @@ public class BDDManager {
                 return affectedRows > 0;
             }
     
-        } catch (SQLException | IOException e) {
+        } catch (SQLException e) {
             e.printStackTrace();
             System.out.println("Something went wrong: " + e.getMessage());
             return false;

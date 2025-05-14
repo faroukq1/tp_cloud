@@ -14,7 +14,7 @@ public class ServerCloud {
     public static void main(String[] args) {
         
       try (ServerSocket server= new ServerSocket(port)) {
-            System.out.println("✅ Serveur en écoute sur le port " + port);
+            System.out.println("Serveur en écoute sur le port " + port);
             while (true) {
                 Socket client = server.accept();
                 new Thread( new Traitement_client(client)).start();
@@ -77,20 +77,22 @@ public class ServerCloud {
                     break;
 
                 case "upload":
-                    if (parts.length == 4) {
-                        String username = parts[1];
-                        String filename = parts[2];
-                        String fileDataString = parts[3];
-
-                        byte [] fileData = fileDataString.getBytes();
-                        if (BDDManager.handleUpload(username, filename, fileData))
-                            out.println("File uploaded successfully");
-                        else
-                            out.println("File upload failed");
-                    } else {
-                        out.println("BAD_FORMAT");
-                    }
-                    break;
+    if (parts.length == 4) {
+        String username = parts[1];
+        String filename = parts[2];
+        String fileDataBase64 = parts[3];
+        
+        // Decode the Base64 string back to bytes
+        byte[] fileData = java.util.Base64.getDecoder().decode(fileDataBase64);
+        
+        if (BDDManager.handleUpload(username, filename, fileData))
+            out.println("OK");
+        else
+            out.println("File upload failed");
+    } else {
+        out.println("BAD_FORMAT");
+    }
+    break;
 
                 case "del":
                     if (parts.length == 2) {

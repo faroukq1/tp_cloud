@@ -23,10 +23,10 @@ public static void main(String[] args) throws IOException {
         
         // start file uploading test
 
-        String username = "farouk";
-        String filename = "dummy.txt";
+    String username = "farouk";
+        String filename = "requete.txt";
         // write your own path        
-        byte [] fileData = Files.readAllBytes(Paths.get("C:\\Users\\NBX\\Desktop\\dummy.txt"));
+        byte [] fileData = Files.readAllBytes(Paths.get("C:\\Users\\Latitude7480\\Desktop\\requete.txt"));
         String fileDataString = new String(fileData);
         out.println("upload,"+username+","+filename+","+fileDataString);
         
