@@ -1,7 +1,3 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- */
-
 package com.mycompany.servercloud;
 import BDD.BDDManager;
 import java.io.BufferedReader;
@@ -29,8 +25,6 @@ public class ServerCloud {
 }
 
 }
-
-
 
  class Traitement_client implements Runnable {
     Socket client;
