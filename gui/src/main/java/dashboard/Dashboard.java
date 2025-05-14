@@ -292,7 +292,9 @@ class Intersection {
     public String getFilePath () {
         return this.filePath;
     }
-
+    public void setLocalDate (String date) {
+        this.localDate = date;
+    }
     @Override
     public String toString() {
         return "Intersection{" +
