@@ -22,8 +22,9 @@ import states.AppStates;
 
 public class Dashboard extends JFrame {
 
-    private FileTableModel tableModel;   
-    private JTable fileTable;           
+    private FileTableModel tableModel;
+    private JTable fileTable;
+    private JLabel timeLabel; // Time display label
 
     public Dashboard() {
         setTitle("Dashboard");
@@ -55,17 +56,38 @@ public class Dashboard extends JFrame {
         JScrollPane tableScrollPane = new JScrollPane(fileTable);
         add(tableScrollPane, BorderLayout.CENTER);
 
-        // --- Bottom Panel with Sync Button ---
-        JPanel bottomPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT)); // Right-aligned
+        // --- Bottom Panel with Sync Button and Time Label ---
+        JPanel bottomPanel = new JPanel(new BorderLayout());
         bottomPanel.setBorder(BorderFactory.createEmptyBorder(10, 20, 10, 20));
+
+        timeLabel = new JLabel("Last Sync: Never");
         JButton syncButton = new JButton("Sync");
-        bottomPanel.add(syncButton);
+
+        bottomPanel.add(timeLabel, BorderLayout.WEST);
+        bottomPanel.add(syncButton, BorderLayout.EAST);
+
         add(bottomPanel, BorderLayout.SOUTH);
 
         // --- Button Actions ---
         uploadButton.addActionListener(e -> handleUpload());
         deleteButton.addActionListener(e -> handleDelete());
-        syncButton.addActionListener(e -> handleSync()); // Sync action
+        syncButton.addActionListener(e -> handleSync());
+
+        // Initial sync on startup
+        // handleSync();
+
+        // Start background thread for automatic sync every 60 seconds
+        new Thread(() -> {
+            while (true) {
+                try {
+                    Thread.sleep(60000); // 60 seconds
+                    SwingUtilities.invokeLater(this::handleSync);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                    break;
+                }
+            }
+        }).start();
 
         setVisible(true);
     }
@@ -118,10 +140,10 @@ public class Dashboard extends JFrame {
         ArrayList<Pair> localFileName = new ArrayList<>();
         ArrayList<Intersection> intersectionLocalDatabase = new ArrayList<>();
         String folderPath = System.getProperty("user.home") + File.separator + "Desktop" + File.separator + "application";
-    
+
         File folder = new File(folderPath);
         File[] files = folder.listFiles();
-    
+
         // Collect local files
         if (files != null) {
             for (File file : files) {
@@ -134,32 +156,32 @@ public class Dashboard extends JFrame {
                 }
             }
         }
-    
+
         // Find intersection between local and database files
         for (FileRecord databaseItem : currentUserList) {
             for (Pair localItem : localFileName) {
                 if (databaseItem.getFileName().equals(localItem.fileName)) {
                     intersectionLocalDatabase.add(new Intersection(
-                        Integer.toString(databaseItem.getFileID()), 
-                        databaseItem.getFileName(), 
-                        databaseItem.getUploadDate(), 
-                        localItem.fileDate, 
+                        Integer.toString(databaseItem.getFileID()),
+                        databaseItem.getFileName(),
+                        databaseItem.getUploadDate(),
+                        localItem.fileDate,
                         localItem.filePath
                     ));
                 }
             }
         }
-    
+
         // Process each intersecting file
         for (Intersection item : intersectionLocalDatabase) {
             try {
                 boolean changeDatabaseFile = isDatabaseOlder(item.getDatabaseDate(), item.getLocalDate());
-                
+
                 if (changeDatabaseFile) {
                     System.out.println(item.getFilename() + " needs update");
                     System.out.println("Local file path: " + item.getFilePath());
-    
-                    // DELETE operation with fresh connection
+
+                    // DELETE operation
                     try (
                         Socket deleteSocket = new Socket("localhost", 3020);
                         PrintWriter deleteOut = new PrintWriter(deleteSocket.getOutputStream(), true);
@@ -168,26 +190,23 @@ public class Dashboard extends JFrame {
                         String deleteCommand = "delete," + AppStates.getCurrentUserName() + "," + item.getFilename();
                         deleteOut.println(deleteCommand);
                         String deleteResponse = deleteIn.readLine();
-    
+
                         if ("OK".equals(deleteResponse)) {
                             System.out.println("Server deleted old file: " + item.getFilename());
-    
-                            // UPLOAD operation with new connection
+
+                            // UPLOAD operation
                             try (
                                 Socket uploadSocket = new Socket("localhost", 3020);
                                 PrintWriter uploadOut = new PrintWriter(uploadSocket.getOutputStream(), true);
                                 BufferedReader uploadIn = new BufferedReader(new InputStreamReader(uploadSocket.getInputStream()))
                             ) {
-                                // Read and encode file
                                 Path path = Paths.get(item.getFilePath());
                                 byte[] fileBytes = Files.readAllBytes(path);
                                 String base64File = Base64.getEncoder().encodeToString(fileBytes);
-    
-                                // Send upload command
+
                                 String uploadCommand = "upload," + AppStates.getCurrentUserName() + "," + item.getFilename() + "," + base64File;
                                 uploadOut.println(uploadCommand);
-    
-                                // Handle response
+
                                 String uploadResponse = uploadIn.readLine();
                                 if ("OK".equals(uploadResponse)) {
                                     System.out.println("File reuploaded successfully: " + item.getFilename());
@@ -208,30 +227,34 @@ public class Dashboard extends JFrame {
                 JOptionPane.showMessageDialog(this, "Error synchronizing file: " + item.getFilename());
             }
         }
-    
+
+        updateSyncTime();
         JOptionPane.showMessageDialog(this, "Synchronization complete!");
-    }    
-    
+    }
+
     private void refreshTable() {
         tableModel.refresh(AppStates.getCurrentUserName());
     }
 
+    private void updateSyncTime() {
+        SwingUtilities.invokeLater(() -> {
+            String now = LocalDateTime.now().format(DateTimeFormatter.ofPattern("HH:mm:ss"));
+            timeLabel.setText("Last Sync: " + now);
+        });
+    }
+
     public static boolean isDatabaseOlder(String databaseDate, String localDate) {
         try {
-            // Remove possible trailing .0 from databaseDate
             if (databaseDate.endsWith(".0")) {
                 databaseDate = databaseDate.substring(0, databaseDate.length() - 2);
             }
 
-            // Define formatters
             DateTimeFormatter databaseFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
             DateTimeFormatter localFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS");
 
-            // Parse the strings
             LocalDateTime dbTime = LocalDateTime.parse(databaseDate, databaseFormatter);
             LocalDateTime localTime = LocalDateTime.parse(localDate, localFormatter);
 
-            // Compare
             return dbTime.isBefore(localTime);
         } catch (Exception e) {
             System.out.println("Error parsing dates: " + e.getMessage());
@@ -239,31 +262,31 @@ public class Dashboard extends JFrame {
         }
     }
 
-
     public static void main(String[] args) {
         SwingUtilities.invokeLater(Dashboard::new);
     }
 }
 
-
+// Helper class for local files
 class Pair {
     String fileName;
     String fileDate;
     String filePath;
-    public Pair (String fileName, String fileDate, String filePath) {
+    public Pair(String fileName, String fileDate, String filePath) {
         this.fileName = fileName;
         this.fileDate = fileDate;
         this.filePath = filePath;
     }
 }
 
+// Class representing intersection entries
 class Intersection {
     private String fileId;
     private String filename;
     private String databaseDate;
     private String localDate;
     private String filePath;
-    // Constructor to initialize all fields
+
     public Intersection(String fileId, String filename, String databaseDate, String localDate, String filePath) {
         this.fileId = fileId;
         this.filename = filename;
@@ -272,7 +295,6 @@ class Intersection {
         this.filePath = filePath;
     }
 
-    // Getter methods for each field
     public String getFileId() {
         return fileId;
     }
@@ -289,20 +311,22 @@ class Intersection {
         return localDate;
     }
 
-    public String getFilePath () {
-        return this.filePath;
+    public String getFilePath() {
+        return filePath;
     }
-    public void setLocalDate (String date) {
+
+    public void setLocalDate(String date) {
         this.localDate = date;
     }
+
     @Override
     public String toString() {
         return "Intersection{" +
-                "fileId='" + fileId + '\'' +
-                ", filename='" + filename + '\'' +
-                ", databaseDate='" + databaseDate + '\'' +
-                ", localDate='" + localDate + '\'' +
-                ", folderPath='" + filePath + '\'' +
-                '}';
+            "fileId='" + fileId + '\'' +
+            ", filename='" + filename + '\'' +
+            ", databaseDate='" + databaseDate + '\'' +
+            ", localDate='" + localDate + '\'' +
+            ", filePath='" + filePath + '\'' +
+            '}';
     }
 }
