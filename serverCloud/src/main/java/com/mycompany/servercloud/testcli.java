@@ -5,6 +5,8 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 
 public class testcli {
     
@@ -15,7 +17,20 @@ public static void main(String[] args) throws IOException {
 
         // out.println("insc,farouk,1234");
         // out.println("del,farouk");
-        out.println("log,farouk,1234");
+        // out.println("log,farouk,1234");
+
+        
+        
+        // start file uploading test
+
+        String username = "farouk";
+        String filename = "dummy.txt";
+        // write your own path        
+        byte [] fileData = Files.readAllBytes(Paths.get("C:\\Users\\NBX\\Desktop\\dummy.txt"));
+        String fileDataString = new String(fileData);
+        out.println("upload,"+username+","+filename+","+fileDataString);
+        
+        // end file uploading test
         String response = in.readLine();
         System.out.println(" Réponse serveur : " + response);
 
@@ -24,3 +39,4 @@ public static void main(String[] args) throws IOException {
 
     
 }
+

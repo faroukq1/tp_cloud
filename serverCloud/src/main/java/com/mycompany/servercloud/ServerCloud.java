@@ -83,8 +83,19 @@ public class ServerCloud {
                     break;
 
                 case "upload":
-                    // to do
-                    out.println("NOT_IMPLEMENTED");
+                    if (parts.length == 4) {
+                        String username = parts[1];
+                        String filename = parts[2];
+                        String fileDataString = parts[3];
+
+                        byte [] fileData = fileDataString.getBytes();
+                        if (BDDManager.handleUpload(username, filename, fileData))
+                            out.println("File uploaded successfully");
+                        else
+                            out.println("File upload failed");
+                    } else {
+                        out.println("BAD_FORMAT");
+                    }
                     break;
 
                 case "del":

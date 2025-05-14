@@ -1,4 +1,9 @@
 package BDD;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.sql.*;
 
 public class BDDManager {
@@ -64,8 +69,36 @@ public class BDDManager {
             return false;
         }
     }
+
     
-    public static boolean handleUpload () {
+    public static boolean handleUpload(String username, String filename, byte[] fileData) {
+        // Define user directory
+        Path userDir = Paths.get(System.getProperty("user.home"), "Desktop", "data", username);
+        File userFolder = userDir.toFile();
+    
+        if (!userFolder.exists()) {
+            boolean canCreate = userFolder.mkdirs();
+            System.out.println(canCreate ? "Folder not found, creating folder..." : "Failed to create user folder.");
+        }
+            Path filePath = userDir.resolve(filename);
+    
+        try (FileOutputStream fileOut = new FileOutputStream(filePath.toFile(), false)) {  // Use filePath.toFile() to get File
+            // Write the file data
+            fileOut.write(fileData);
+            fileOut.flush();
+    
+            boolean isSaved = saveFileToDatabase(username, filename, fileData.length);
+            System.out.println(isSaved ? "File uploaded successfully!" : "Failed uploading file");    
+            return isSaved;
+        } catch (IOException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+    
+    
+
+    public static boolean saveFileToDatabase (String username, String filename, long fileData) {
         return true;
     }
     public static void main (String [] args) {
