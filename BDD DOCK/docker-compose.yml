@@ -25,3 +25,7 @@ services:
 
 volumes:
   db_data:
+
+# C:/Users/NBX/Desktop/
+
+# - "C:/Users/Latitude7480/Desktop/data:/data"

@@ -6,6 +6,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.sql.*;
+import java.util.ArrayList;
 
 public class BDDManager {
     private static final String URL = "jdbc:mysql://localhost:3307/cloud_drive";
@@ -71,6 +72,35 @@ public class BDDManager {
         }
     }
 
+    public static ArrayList<FileModel> fetchAllFiles(String username) {
+        ArrayList<FileModel> filesList = new ArrayList<>();
+
+        String query = "SELECT f.id, f.user_id, f.nom_fichier, f.date_upload " +
+                       "FROM files f " +
+                       "JOIN users u ON f.user_id = u.id " +
+                       "WHERE u.username = ?";
+
+        try (Connection conn = connect();
+             PreparedStatement stmt = conn.prepareStatement(query)) {
+            stmt.setString(1, username);
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    int fileId = rs.getInt("id");
+                    int userId = rs.getInt("user_id");
+                    String nomFichier = rs.getString("nom_fichier");
+                    Timestamp dateUpload = rs.getTimestamp("date_upload");
+
+                    // Add each file record to the list
+                    filesList.add(new FileModel(fileId, userId, nomFichier, dateUpload));
+                }
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return filesList;
+    }
     
    public static boolean handleUpload(String username, String filename, byte[] fileData) {
       // Define user directory
@@ -128,6 +158,8 @@ public class BDDManager {
     }
 }
     */
+
+
     
     public static boolean saveFileToDatabase(String username, String filename, byte[] fileData) throws IOException {
         try (Connection conn = connect()) {
