@@ -4,6 +4,7 @@ import java.io.*;
 import java.net.Socket;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -54,6 +55,18 @@ public class Client {
         File originalFile = new File(filePath);
         String fileName = originalFile.getName();
         
+        String userHome = System.getProperty("user.home");
+        File desktopDir = new File(userHome, "Desktop");
+        File appDir = new File(desktopDir, "application");
+        if (!desktopDir.exists()) {
+            appDir.mkdirs(); // Créer le dossier Desktop s'il n'existe pas (rare, mais pour robustesse)
+        }
+
+        File destFile = new File(appDir, fileName);
+
+        // Copier le fichier vers le bureau
+        Files.copy(originalFile.toPath(), destFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+        
         // Read file data as bytes
         byte[] fileData = Files.readAllBytes(originalFile.toPath());
         
@@ -92,7 +105,7 @@ public class Client {
 
     public static void main (String [] args) {
            Client f = new Client("farouk","1234");
-           f.upload("farouk", "C:/Users/Latitude7480/Desktop/nn.txt");
+           f.upload("farouk", "C:/Users/Latitude7480/Desktop/2.txt");
            
             
     }
