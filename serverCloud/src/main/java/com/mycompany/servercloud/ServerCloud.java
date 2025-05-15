@@ -105,16 +105,14 @@ class Traitement_client implements Runnable {
                     }
                     break;
 
-                    case "fetch":
-                        if (parts.length == 2) {
-                            String username = parts[1];
-                            ArrayList<FileModel> files = BDDManager.fetchAllFiles(username);
-                        
-                        // Corrected the condition to check if the list is not empty
+                case "fetch":
+                    if (parts.length == 2) {
+                        String username = parts[1];
+                        ArrayList<FileModel> files = BDDManager.fetchAllFiles(username);
+
                         if (files != null && !files.isEmpty()) {
                             out.println("OK " + files.size());
-                
-                            // Send file details
+
                             for (FileModel file : files) {
                                 String fileDetails = file.getId() + "," + file.getNomFichier() + "," + file.getDateUpload();
                                 System.out.println("1 : " + fileDetails);
@@ -125,38 +123,38 @@ class Traitement_client implements Runnable {
                         }
                     }
                     break;
-                    case "detect":
-                        if (parts.length == 3) {
-                            String fileId = parts[1];
-                            String fileDate = parts[2];
 
-                            if (BDDManager.isDatabaseFileOlder(Integer.parseInt(fileId), fileDate)) {
-                                System.out.println("file needs update");
-                                out.println("OLD " + fileId);
-                            } else {
-                                System.out.println("no need to change");
-                                out.println("NEW");
-                            }
+                case "detect":
+                    if (parts.length == 3) {
+                        String fileId = parts[1];
+                        String fileDate = parts[2];
+
+                        if (BDDManager.isDatabaseFileOlder(Integer.parseInt(fileId), fileDate)) {
+                            System.out.println("file needs update");
+                            out.println("OLD " + fileId);
                         } else {
-                            out.println("INVALID_TOKEN");
+                            System.out.println("no need to change");
+                            out.println("NEW");
                         }
-                        break;
-                      case "delete":
-                            // format attendu: delete,username,filename
-                            if (parts.length == 3) {
-                            String username = parts[1];
-                            String filename = parts[2];
-                                if (BDDManager.deleteFile(username, filename)) {
-                                    out.println("OK");
-                                    } else {
-                                    out.println("FAILED");
-                                    }
-                                } else {
-                                out.println("BAD_FORMAT");
-                                }
-                                break;
+                    } else {
+                        out.println("INVALID_TOKEN");
+                    }
+                    break;
 
-                
+                case "delete":
+                    if (parts.length == 3) {
+                        String username = parts[1];
+                        String filename = parts[2];
+                        if (BDDManager.deleteFile(username, filename)) {
+                            out.println("OK");
+                        } else {
+                            out.println("FAILED");
+                        }
+                    } else {
+                        out.println("BAD_FORMAT");
+                    }
+                    break;
+
                 default:
                     out.println("UNKNOWN_COMMAND");
             }
